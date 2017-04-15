@@ -1,0 +1,38 @@
+#!/hadron/knippsch/Enthought/Canopy_64bit/User/bin/python
+##!/usr/bin/python
+################################################################################
+#
+# Function: This program comnine different configuration files into one
+#
+#
+################################################################################
+import numpy as np
+import analysis as ana
+
+def main():
+    nboots = 5000
+    inputpath = "/hiskp2/tingchen/DDscattering/DDcode/D-D-scatering/analysis_coupleD/rebuild_corr/A40.32/charm_225_old/corr_4p"
+    outputpath = "/hiskp2/tingchen/DDscattering/DDcode/D-D-scatering/analysis_coupleD/A40.32/charm_225_old"
+
+    state = ["DDstar", "DstarDstar"]
+
+    for s1 in {0,1}:
+      for s2 in {0,1}:
+         for i in range(4):
+            for j in range(4):
+              fname = "%s/%s_%s_corr_T1_TP0_sum_%i%i.dat" %(inputpath, state[s1], state[s2], i, j)
+              fname_out = "%s/%s_%s_corr_T1_TP0_sum_%i%i.dat" %(outputpath, state[s1], state[s2], i, j)
+              if s1==0 and s2==1:
+                corr = -ana.boot_corr(ana.read_data_ascii(fname),nboots)
+              else:
+                corr = ana.boot_corr(ana.read_data_ascii(fname),nboots)
+              ana.write_data_ascii(corr, fname_out) 
+    return
+
+
+# make this script importable, according to the Google Python Style Guide
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

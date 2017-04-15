@@ -1,0 +1,83 @@
+#!/hadron/knippsch/Enthought/Canopy_64bit/User/bin/python
+##!/usr/bin/python
+################################################################################
+#
+# Author: Christian Jost (jost@hiskp.uni-bonn.de)
+# Date:   Februar 2015
+#
+# Copyright (C) 2015 Christian Jost
+# 
+# This program is free software: you can redistribute it and/or modify it under 
+# the terms of the GNU General Public License as published by the Free Software 
+# Foundation, either version 3 of the License, or (at your option) any later 
+# version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT 
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with tmLQCD. If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+#
+# Function: This program fits the single pion and the ratio
+#
+# For informations on input parameters see the description of the function.
+#
+################################################################################
+
+import sys
+import numpy as np
+import matplotlib
+matplotlib.use('Agg') # has to be imported before the next lines
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+import analysis as ana
+
+
+def main():
+    latt=["A40.32"]
+    t0=[1,2,3]
+    subdir = "charm_2911_off"
+   
+    matrix_dim = 4 
+    filename_matrix = np.empty([matrix_dim, matrix_dim], dtype='a200')
+    for _l in latt:
+      print("****************** %s ******************" % _l) 
+      inputpath = "./%s/%s" % (_l,subdir)
+      for i in range(4):
+        for j in range(4):
+          filename_matrix[i,j] = "%s/DstarDstar_DDstar_corr_T1_TP0_sum_%i%i.dat" % (inputpath, i, j)
+      corr_mat = ana.create_corr_matrix_sinh(filename_matrix, complex=False)
+
+      nsample = corr_mat.shape[0]
+      Lt = corr_mat.shape[1]
+      Lx = Lt/2
+      print(corr_mat[0,0])
+      for _t0 in t0:
+          print("********t=%i***********" % _t0)
+          eigen_vals, eigen_vecs = ana.calculate_gevp(corr_mat, _t0, sym=True)
+          Ct0 = corr_mat[:, _t0, :, :]
+
+          outputpath = "%s/DstarDstar_DDstar/eig/eval" % (inputpath)
+          eigoutfilename = []
+          vecoutfilename = []
+          for _j in range(matrix_dim):
+             eigoutfilename.append("%s/eig%i_t0_%i" % (outputpath, _j, _t0))
+             vecoutfilename.append("%s/vec%i_t0_%i" % (outputpath, _j, _t0))
+          order_eigen_vals, order_eigen_vecs = ana.reorder_by_eval(eigen_vals, eigen_vecs, _t0)
+          ana.write_eigenvals_cosh(eigoutfilename, order_eigen_vals)
+          for _j in range(matrix_dim):
+             np.savez(vecoutfilename[_j], vec=order_eigen_vecs[_j])      
+
+    return
+
+
+# make this script importable, according to the Google Python Style Guide
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

@@ -1,0 +1,34 @@
+#!/hadron/knippsch/Enthought/Canopy_64bit/User/bin/python
+##!/usr/bin/python
+#############################################################################################
+
+import numpy as np
+import combine_files as cf
+
+def main():
+
+    state = ["DDstar", "DstarDstar"]
+    inputpath = "/hiskp2/tingchen/DDscattering/data/A40.32/charm_225_old/corr_4p"
+    outputpath = "./A40.32/charm_225_old"
+    for s1 in {0, 1}:
+        for s2 in {0, 1}:
+            for i in range(4):
+                for j in range(4):
+                    file_suffix = "%s_%s_corr_T1_TP0_sum_%i%i" % (state[s1], state[s2], i, j)
+                    cf.rebuild_corr(inputpath,outputpath,file_suffix)
+    for gi in {1,2,3,5}:
+        for p in {0,1,2,3,4}:
+            fname = "cmbaru_gamma%s_corr_p%i" % (gi,p)
+            cf.rebuild_corr(inputpath,outputpath,fname)
+
+
+    return
+
+
+# make this script importable, according to the Google Python Style Guide
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+

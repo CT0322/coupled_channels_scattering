@@ -1,0 +1,77 @@
+#!/hadron/knippsch/Enthought/Canopy_64bit/User/bin/python
+##!/usr/bin/python
+
+import sys
+import numpy as np
+import matplotlib
+matplotlib.use('Agg') # has to be imported before the next lines
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+import analysis as ana
+
+
+def main():
+   
+    state=[0] 
+    dir = "/hiskp2/liuming/pipi/I0code/analysis/python/DDstar"
+#    lattice = ["D15.48", "D30.48", "D45.32", "B25.32", "B35.32", "B35.48", "B55.32", "B85.24", "A30.32", "A40.20", "A40.24", "A40.32", "A60.24", "A80.24", "A100.24"]
+#    T=[48, 48, 32, 32, 32, 48, 32, 24, 32, 20, 24, 32, 24, 24, 24]
+    lattice = ["A40.32"]
+    T=[32]
+    color = ['m', 'b', 'k', 'g','c','m','y','r']
+    shape = ['x', 'o', 'o','o','o','o','o','o']
+    subdir = "eig/eval"
+#    label = ['$\pi\pi$', '$\sigma$', '$a_{0}a_{0}$', '$\pi_{0}$']
+    label = [r'eig_0', 'eig_1', 'eig_2', 'eig_3', 'eig_4', 'eig_5', 'eig_6', 'eig_7']
+    matplotlib.rcParams['font.size'] = 18
+    plt.figure(figsize=(7,7))
+#    matplotlib.rcParams.update({'figure.autolayout': True})
+    for l in range(len(lattice)):
+        print("****************************%s*******************************" % lattice[l])
+        outputpath = "%s/%s/%s" % (dir, lattice[l], subdir)
+        output = "%s/em_eig0.pdf" % outputpath
+        pdfplot = PdfPages(output)
+        inputpath = "%s/%s/%s" % (dir, lattice[l], subdir)
+#        X=np.arange(2,27,0.01)
+#        Y1=0.3010-0.0003+0.0*X
+#        Y2=0.3010+0.0003+0.0*X
+#        plt.fill_between(X, Y1, Y2, color='grey', alpha=0.5)
+#        X=np.arange(3,35,0.01)
+#        Y1=0.108-0.002+0.0*X
+#        Y2=0.108+0.002+0.0*X
+#        plt.fill_between(X, Y1, Y2, color='grey', alpha=0.5)
+        for _n in state:
+           datainput = "%s/em_eig%i" % (inputpath, _n)
+           em = np.genfromtxt(datainput, usecols=(0,1,2))
+#              print(em.shape)
+#              print(em)
+           xlim = [0, 30]
+           ylim = [1.6, 1.8]
+           tdel = []
+           for _t in range(T[l]):
+            if em[_t,1] < 10e-10:
+                  tdel.append(_t)
+           em = np.delete(em, tdel, 0)
+           plt.errorbar(em[:,0], em[:,1], em[:,2], fmt='x' + color[_n], label=label[_n])
+#           plt.errorbar(em[:,0], em[:,1], em[:,2], fmt=shape[_n] + color[_n], markeredgecolor=color[_n])
+#           plt.subplots_adjust(bottom=0.12,left=0.15)
+           plt.xlabel("$t/a$", fontsize=18)
+#           plt.ylabel("$m_{eff}$", fontsize=24)
+           plt.ylabel("$a E$", fontsize=18)
+           plt.xlim(xlim)
+           plt.ylim(ylim)
+#           plt.title(lattice[l])
+           plt.legend()
+        pdfplot.savefig()
+        plt.clf()
+        pdfplot.close()
+    return
+
+
+# make this script importable, according to the Google Python Style Guide
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

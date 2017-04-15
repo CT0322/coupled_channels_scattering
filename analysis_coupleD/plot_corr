@@ -1,0 +1,67 @@
+#!/hadron/knippsch/Enthought/Canopy_64bit/User/bin/python
+##!/usr/bin/python
+
+import sys
+import numpy as np
+import matplotlib
+matplotlib.use('Agg') # has to be imported before the next lines
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+import analysis as ana
+
+
+def main():
+    
+    state = [0,1,2,3,4,5,6,7]
+    dir = "/hiskp2/liuming/pipi/I0code/analysis/python/DDstar"
+    subdir="eig/eval"
+#    shift=1
+#    lattice = ["D45.32", "B25.32", "B35.32", "B35.48", "B55.32", "B85.24", "A30.32", "A40.32", "A40.24", "A60.24", "A80.24", "A100.24", "cA2.09.48", "cA30.24", "cA2.60.32"]
+    lattice = ["A40.32"]
+#    T=[48,48,32,32,32,48,32,24,32,32,24,24,24,24]
+#    T=[24]
+    normt = 2
+    color = ['r', 'm', 'b', 'g','k','c','y','r']
+#    label = ['$\pi\pi$', '$\sigma$', '$a_{0}a_{0}$', '$\pi_{0}$']
+    label = ['eig_0', 'eig_1', 'eig_2', 'eig_3', 'eig_4', 'eig_5', 'eig_6', 'eig_7']
+#    label = ['pipi']
+    for l in range(len(lattice)):
+        print("****************************%s*******************************" % lattice[l])
+        outputpath = "%s/%s/%s" % (dir, lattice[l], subdir)
+        datainputpath = "%s/%s/%s" % (dir, lattice[l], subdir)
+#        output = "%s/corr_dis_00.pdf" % (outputpath)
+#        pdfplot = PdfPages(output)
+        for n in state:
+              output = "%s/corr_eig_nolog_%i.pdf" % (outputpath,n)
+              pdfplot = PdfPages(output)
+#              datainput = "%s/pipi_I0_corr_ReLoop_%i%i.dat" % (datainputpath, n,n)
+              datainput = "%s/eig%i_t0_1" % (datainputpath,n)
+              corr = np.real(ana.read_data_ascii(datainput))
+              Lt = corr.shape[1]
+              plotrange = [0, Lt/2]
+              X = np.arange(0, Lt/2, 1)
+              corr_mean, corr_std = ana.calc_error(corr)
+              print(corr_std[0:Lt/2]/corr[0, 0:Lt/2])
+#              norm = corr[0,normt]
+#              corr_std = corr_std/norm
+#              corr[0] = corr[0]/norm
+              plt.errorbar(X, corr[0, 0:Lt/2], corr_std[0:Lt/2], fmt='x'+color[n], label=label[n])
+#              plt.plot(X, corr_std[0:Lt/2]/corr[0, 0:Lt/2])
+              plt.xlabel("t")
+              plt.ylabel("C(t)")
+#              plt.yscale("log")
+              plt.ylim([-10e-5,10e-5])
+              plt.legend()
+              pdfplot.savefig()
+              plt.clf()
+              pdfplot.close()
+    return
+
+
+# make this script importable, according to the Google Python Style Guide
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

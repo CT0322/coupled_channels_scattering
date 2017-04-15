@@ -1,0 +1,59 @@
+#!/hadron/knippsch/Enthought/Canopy_64bit/User/bin/python
+##!/usr/bin/python
+
+import sys
+import numpy as np
+import matplotlib
+matplotlib.use('Agg') # has to be imported before the next lines
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+import analysis as ana
+
+
+def main():
+    
+    dir = "/hiskp2/tingchen/DDscattering/DDcode/D-D-scatering/analysis_coupleD"
+    lat = "A40.32/charm_2911_off"
+    lattice = ["%s/DDstar_DstarDstar_corr_T1_TP0_sum_33.dat" %lat]
+#    lattice = ["%s/DstarDstar_DstarDstar_corr_T1_TP0_sum_00.dat" %lat, "%s/same_rnd/DstarDstar_DstarDstar_corr_T1_TP0_sum_00.dat" %lat]
+    normt = 2
+    colors={u'rr':(1.0,0.5,0.5)}
+    color = ['r', 'm', 'b', 'g', 'y', 'k','c', 'r']
+    label = [r'$DD^*-D^*D^*-33$',r'$D^*D^*-D^*D^*-32$']
+    output = "%s/%s/test/DDstar_DstarDstarcorr_T1_TP0_sum_comp.pdf" % (dir, lat)
+    pdfplot = PdfPages(output)
+    for l in range(len(lattice)):
+#    for l in {0}:
+              print("****************************%s*******************************" % lattice[l])
+              datainput = "%s/%s" % (dir, lattice[l])
+              corr = np.real(ana.read_data_ascii(datainput))
+              Lt = corr.shape[1]
+              plotrange = [0, Lt]
+              X = np.arange(0, Lt, 1)
+              corr_mean, corr_std = ana.calc_error(corr)
+              print(corr_std/corr_mean)
+              print("***************")
+#              norm = corr[0,1]
+#              corr[0] = corr[0]/norm
+#              corr_std = corr_std/norm
+              plt.errorbar(X, corr[0, 0:Lt], corr_std[0:Lt], fmt='x' + color[l], label=label[l])
+#              plt.errorbar(X, corr[0, 0:Lt/2+1], corr_std[0:Lt/2+1], fmt='x' + color[l])
+#              plt.errorbar(X, corr[0, 0:Lt/2+1], corr_std[0:Lt/2+1], fmt='x' + color[l])
+              plt.xlabel("t")
+              plt.ylabel("$C(t)$")
+              plt.yscale("log")
+#              plt.ylim([1e-3, 10])
+              plt.legend()
+    pdfplot.savefig()
+    plt.clf()
+    pdfplot.close()
+    return
+
+
+# make this script importable, according to the Google Python Style Guide
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

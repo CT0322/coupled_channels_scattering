@@ -1,0 +1,64 @@
+#!/hadron/knippsch/Enthought/Canopy_64bit/User/bin/python
+##!/usr/bin/python
+
+import sys
+import numpy as np
+import matplotlib
+matplotlib.use('Agg') # has to be imported before the next lines
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+import analysis as ana
+
+
+def main():
+
+    dir = "/hiskp2/tingchen/DDscattering/DDcode/D-D-scatering/analysis_coupleD"
+    lat = ["A40.32/charm_225","A40.32/charm_225_old"]
+#    lattice = ["%s/DstarDstar_DstarDstar_corr_T1_TP0_sum_00.dat" %lat, "%s/same_rnd/DstarDstar_DstarDstar_corr_T1_TP0_sum_00.dat" %lat]
+    normt = 2
+    colors={u'rr':(1.0,0.5,0.5)}
+    color = ['r', 'm', 'b', 'g', 'y', 'k','c', 'r']
+    label = [r'$DD^*-DD^*-00-new$',r'$DD^*-DD^*-00-old$']
+    output = "%s/%s/test/DDstar_DDstar_corr_T1_TP0_sum_comp.pdf" % (dir, lat[0])
+    pdfplot = PdfPages(output)
+    for l in range(len(lat)):
+#    for l in {0}:
+              _lat = lat[l]
+              lattice = "%s/DDstar_DDstar_corr_T1_TP0_sum_00.dat" %_lat
+              print("****************************%s*******************************" % lattice)
+              datainput = "%s/%s" % (dir, lattice)
+              print("****************************%s*******************************" % datainput)
+              corr = np.real(ana.read_data_ascii(datainput))
+              Lt = corr.shape[1]
+              plotrange = [0, Lt]
+              X = np.arange(0, Lt, 1)
+              corr_mean, corr_std = ana.calc_error(corr)
+              print(corr_std/corr_mean)
+              print("***************")
+#              norm = corr[0,1]
+#              corr[0] = corr[0]/norm
+#              corr_std = corr_std/norm
+              corr_plot = corr_std[0:Lt]/corr[0, 0:Lt]
+              plt.plot(X, corr_plot,  color[l], label=label[l])
+#              plt.errorbar(X, corr[0, 0:Lt/2+1], corr_std[0:Lt/2+1], fmt='x' + color[l])
+              plt.xlabel("t")
+              plt.ylabel("$\Delta C(t)/C(t)$")
+      #        plt.yscale("log")
+#              plt.ylim([1e-3, 10])
+              plt.legend()
+    pdfplot.savefig()
+    plt.clf()
+    plt.show()
+    pdfplot.close()
+    return
+
+
+
+# make this script importable, according to the Google Python Style Guide
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+

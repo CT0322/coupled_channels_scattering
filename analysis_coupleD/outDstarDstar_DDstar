@@ -1,0 +1,7 @@
+****************** A40.32 ******************
+Traceback (most recent call last):
+  File "./GEVP_order_DDstar", line 81, in <module>
+    main()
+  File "./GEVP_order_DDstar", line 53, in main
+    corr_mat = ana.create_corr_matrix_sinh(filename_matrix, complex=False)
+TypeError: create_corr_matrix_sinh() takes at least 4 arguments (2 given)

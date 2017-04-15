@@ -1,0 +1,110 @@
+#!/hadron/knippsch/Enthought/Canopy_64bit/User/bin/python
+##!/usr/bin/python
+################################################################################
+#
+# Author: Christian Jost (jost@hiskp.uni-bonn.de)
+# Date:   Februar 2015
+#
+# Copyright (C) 2015 Christian Jost
+# 
+# This program is free software: you can redistribute it and/or modify it under 
+# the terms of the GNU General Public License as published by the Free Software 
+# Foundation, either version 3 of the License, or (at your option) any later 
+# version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT 
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with tmLQCD. If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+#
+# Function: This program fits the single pion and the ratio
+#
+# For informations on input parameters see the description of the function.
+#
+################################################################################
+
+import sys
+import numpy as np
+import matplotlib
+matplotlib.use('Agg') # has to be imported before the next lines
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+import analysis as ana
+
+
+def main():
+    dir="/hiskp2/liuming/pipi/I0code/analysis/python/DDstar"
+    lattice = "A40.32"
+    subdir=""
+    state = "DDstar_DDstar"
+    p="00"
+#    dt=4.0
+    t0=1
+    t_min = [7,8,9,10,11,12,13,14,15,16,17,18,19]
+#    t_min = [8]
+#    t_min = [9,10]
+    t_max = 23
+    ini_pars = [0.000001, 1.6]
+#    fitfunc = lambda p, t: p[0]*np.sinh((Lt/2.0 - t - dt/2.0)*p[1])
+    fitfunc = lambda p, t: p[0]*np.cosh((Lt/2 - t)*p[1])
+    print("****************************%s*******************************" % lattice)
+    outputpath = "%s/%s/%s/fit" % (dir, lattice, subdir)
+    inputpath = "%s/%s/%s" % (dir, lattice, subdir)
+    input = "%s/%s_corr_T1_TP0_sum_%s.dat" % (inputpath, state, p)
+    corr_read = np.real(ana.read_data_ascii(input))
+    corr=10e12*corr_read 
+    corr_std = np.std(corr, axis=0)
+#    mass = np.zeros((len(t_min)))
+#    error = np.zeros((len(t_min)))
+    mass=[]
+    error=[]
+    Lt = corr.shape[1]
+    print(Lt)
+    nboots = corr.shape[0]
+    print(nboots)
+    for ti in range(len(t_min)):
+      bootstrapfit="%s/bootstrapfit_%s_TP0_%s_t%s" % (outputpath,state,p, t_min[ti])
+      res, res_cov, chisquare, dof, pvals = ana.fitting(fitfunc, np.arange(t_min[ti], t_max+1), corr[:, t_min[ti]:t_max+1], ini_pars, correlated=True)
+      mean, std = ana.calc_error(res)
+      print("tmin = %i, mass = %f(%f), %f, chi2 = %f, p=%f" % (t_min[ti], res[0, 1], std[1], mean[1], chisquare/dof, pvals))
+      mass.append(res[0,1])
+      error.append(std[1])
+      np.savetxt(bootstrapfit, res, fmt=["%.10f", "%.10f"])
+
+      outplot="%s/fit_%s_TP0_%s_t%i.pdf" % (outputpath, state, p, t_min[ti])
+      pdfplot=PdfPages(outplot)
+      plotrange = [0, Lt/2]
+      X = np.arange(0, Lt/2, 1)
+      fitrange = [t_min[ti], t_max]
+      ana.plot_data_with_fit_mean(X, corr[0,0:Lt/2], corr_std[0:Lt/2], fitfunc, fitrange, res[0], [std[1], 0, 0], plotrange, Lt, pdfplot, logscale=True, xlim=[-0.5, Lt/2])
+#    print("fit done")
+    
+ 
+# plot the fit
+    outplot = "%s/fitresults_%s_TP0_%s.pdf" % (outputpath,state, p)
+    pdfplot = PdfPages(outplot)
+    p1 = plt.errorbar(t_min, mass, error, fmt='x' + 'r')
+    plt.xlabel('t_min')
+    plt.ylabel('E')
+    plt.xlim(t_min[0]-0.5, t_min[len(t_min)-1]+0.5)
+#    plt.ylim(0.28,0.32)
+    pdfplot.savefig()
+    plt.clf()
+    pdfplot.close()
+#    print("plot done") 
+
+    return
+
+
+# make this script importable, according to the Google Python Style Guide
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+

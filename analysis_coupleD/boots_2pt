@@ -1,0 +1,62 @@
+#!/hadron/knippsch/Enthought/Canopy_64bit/User/bin/python
+##!/usr/bin/python
+################################################################################
+#
+# Author: Christian Jost (jost@hiskp.uni-bonn.de)
+# Date:   Februar 2015
+#
+# Copyright (C) 2015 Christian Jost
+# 
+# This program is free software: you can redistribute it and/or modify it under 
+# the terms of the GNU General Public License as published by the Free Software 
+# Foundation, either version 3 of the License, or (at your option) any later 
+# version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT 
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with tmLQCD. If not, see <http://www.gnu.org/licenses/>.
+#
+################################################################################
+#
+# Function: This program fits the single pion and the ratio
+#
+# For informations on input parameters see the description of the function.
+#
+################################################################################
+import numpy as np
+import analysis as ana
+
+def main():
+    nboots = 5000
+    outputpath = "/hiskp2/tingchen/DDscattering/DDcode/D-D-scatering/analysis_coupleD/A40.32/charm_225"
+    inputpath = "/hiskp2/tingchen/DDscattering/DDcode/D-D-scatering/analysis_coupleD/rebuild_corr/A40.32/charm_225"
+    for p in {0,1,2,3,4}:
+      fname = "%s/cmbaru_gamma5_corr_p%i.dat" % (inputpath, p)
+      fname_out = "%s/cmbaru_gamma5_corr_p%i.dat" % (outputpath, p)
+      corr = ana.boot_corr(ana.read_data_ascii(fname),nboots)
+      ana.write_data_ascii(corr, fname_out)
+
+      ave = np.zeros_like(corr)
+      for i in {1,2,3}: 
+        fname = "%s/cmbaru_gamma%i_corr_p%i.dat" % (inputpath, i, p)
+        fname_out = "%s/cmbaru_gamma%i_corr_p%i.dat" % (outputpath,i, p)
+        corr = ana.boot_corr(ana.read_data_ascii(fname),nboots)
+        corr1= -1.0*corr
+        ave += corr1 
+        ana.write_data_ascii(corr1, fname_out)
+      ave /= 3.0
+      fname_out = "%s/cmbaru_gamma123_corr_p%i.dat" % (outputpath, p)
+      ana.write_data_ascii(ave, fname_out)
+ 
+    return
+
+
+# make this script importable, according to the Google Python Style Guide
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass

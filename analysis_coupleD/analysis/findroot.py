@@ -91,7 +91,7 @@ def root(L, mpi, a0, r0, a2, r2, d=np.array([0., 0., 0.]), irrep="A1", n=1):
             q2_range_min[i*n_blocks + j] = q2_min + j * q2_delta
             q2_range_max[i*n_blocks + j] = q2_min + (j + 1) * q2_delta
 
-    # main loop
+    # main_dir loop
     loop_i = 0
     while(nroot < n):
         det1 = calc_det(q2_range_min[loop_i])

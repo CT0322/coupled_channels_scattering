@@ -34,10 +34,10 @@ set(SOURCE_FILES
     include/propagator_io.h
     include/quark.h
     include/ReadWrite.h
-    main/._LapHs.cpp
-    main/LapHs.cpp
-    main/LapHs_halfdone.cpp
-    main/LapHsfirst.cpp
+        main_dir/._LapHs.cpp
+        main_dir/LapHs.cpp
+        main_dir/LapHs_halfdone.cpp
+        main_dir/LapHsfirst.cpp
     modules/._Contrac_SiSiSiSi_SoSoSoSo.cpp
     modules/._Contrac_SiSiSoSo_SoSi.cpp
     modules/._Contrac_SiSiSoSo_SoSoSiSi.cpp

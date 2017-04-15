@@ -18,7 +18,7 @@ GlobalData* GlobalData::Instance () {
 	return instance_;
 }
 // *****************************************************************************
-// A helper function to simplify the main part.
+// A helper function to simplify the main_dir part.
 template<class T>
 std::ostream& operator<< (std::ostream& os, const std::vector<T>& v) {
 	std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, " "));
